@@ -54,19 +54,24 @@ public class RoundRobinTournament {
 	private static String gameImitation(GameRecord gameRecord, List<GameGamerRecord> players) {
 		Game gameSession = new Game(gameRecord.id(), gameRecord.sequence());
 		String winnerAccount = null;
-		while( winnerAccount == null )  {
+		boolean proceedWithNextMove = true;
+		while( winnerAccount == null && proceedWithNextMove)  {
 			GameGamerRecord playerToMove = players.get(0);
 			String guess = playerToMove.gameSolver().tryToGuess();
 			List<MoveResult> result = gameSession.moveProcess(guess);
 			MoveResult lastMoveResult = result.get(result.size() - 1);
 			int cows = lastMoveResult.cows();
 			int bulls = lastMoveResult.bulls();
-			csvMoveData.append( new MoveRecord(guess, bulls, cows, playerToMove.id()).getCSVString() ).append(System.lineSeparator());
+			MoveRecord move = new MoveRecord(guess, bulls, cows, playerToMove.id());
+			csvMoveData.append( move.getCSVString() ).append(System.lineSeparator());
 			if ( !gameSession.isFinished ) {
 				playerToMove.gameSolver().processHint(bulls, cows);
 				Collections.rotate(players, -1);
 			} else {
 				winnerAccount = playerToMove.gamerId();
+			}
+			if( move.id() > 0 && move.id() % 70 == 0 ) {
+				proceedWithNextMove = false;
 			}
 		} 
 		return winnerAccount;
